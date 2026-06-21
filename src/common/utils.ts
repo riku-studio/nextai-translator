@@ -393,6 +393,33 @@ interface FetchSSEOptions extends RequestInit {
     isJSONStream?: boolean
 }
 
+function isLocalURL(input: string) {
+    try {
+        const { hostname } = new URL(input)
+        return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1'
+    } catch (e) {
+        return false
+    }
+}
+
+function wait(ms: number, signal?: AbortSignal | null) {
+    return new Promise<void>((resolve, reject) => {
+        if (signal?.aborted) {
+            reject(new DOMException('Aborted', 'AbortError'))
+            return
+        }
+        const timer = setTimeout(resolve, ms)
+        signal?.addEventListener(
+            'abort',
+            () => {
+                clearTimeout(timer)
+                reject(new DOMException('Aborted', 'AbortError'))
+            },
+            { once: true }
+        )
+    })
+}
+
 export async function fetchSSE(input: string, options: FetchSSEOptions) {
     const {
         onMessage,
@@ -526,7 +553,16 @@ export async function fetchSSE(input: string, options: FetchSSEOptions) {
         })
     }
 
-    const resp = await fetcher(input, fetchOptions)
+    let resp: Response
+    try {
+        resp = await fetcher(input, fetchOptions)
+    } catch (error) {
+        if (!isLocalURL(input) || options.signal?.aborted) {
+            throw error
+        }
+        await wait(1500, options.signal)
+        resp = await fetcher(input, fetchOptions)
+    }
     onStatusCode?.(resp.status)
     if (resp.status !== 200) {
         onError(await resp.json())

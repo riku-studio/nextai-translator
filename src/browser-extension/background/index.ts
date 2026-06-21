@@ -66,9 +66,11 @@ async function fetchWithStream(
         url: response.url,
     }
 
+    port.postMessage(responseSend)
+
     const reader = response?.body?.getReader()
     if (!reader) {
-        port.postMessage(responseSend)
+        port.disconnect()
         return
     }
 
