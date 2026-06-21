@@ -43,11 +43,20 @@ export async function backgroundFetch(input: string, options: RequestInit) {
                 : window.ReadableStream
             const textEncoder = new TextEncoder()
             let resolved = false
+            let settled = false
             const browser = (await import('webextension-polyfill')).default
             const port = browser.runtime.connect({ name: BackgroundEventNames.fetch })
             const message: BackgroundFetchRequestMessage = {
                 type: 'open',
                 details: { url: input, options: fetchOptions },
+            }
+
+            const rejectOnce = (error: Error | DOMException) => {
+                if (settled) {
+                    return
+                }
+                settled = true
+                reject(error)
             }
 
             const readableStream = new ReadableStream({
@@ -59,10 +68,11 @@ export async function backgroundFetch(input: string, options: RequestInit) {
                             e.message = error.message
                             e.name = error.name
                             controller.error(e)
+                            rejectOnce(e)
                             return
                         }
-                        controller.enqueue(textEncoder.encode(data))
                         if (!resolved) {
+                            settled = true
                             resolve({
                                 ...restResp,
                                 body: readableStream,
@@ -74,10 +84,20 @@ export async function backgroundFetch(input: string, options: RequestInit) {
                             } as unknown as Response)
                             resolved = true
                         }
+                        if (data !== undefined) {
+                            controller.enqueue(textEncoder.encode(data))
+                        }
                     })
 
                     port.onDisconnect.addListener(() => {
                         signal?.removeEventListener('abort', handleAbort)
+                        if (!resolved) {
+                            rejectOnce(
+                                signal?.aborted
+                                    ? new DOMException('Aborted', 'AbortError')
+                                    : new Error('Background fetch disconnected before receiving a response')
+                            )
+                        }
                         try {
                             controller.close()
                         } catch (e) {
@@ -91,8 +111,11 @@ export async function backgroundFetch(input: string, options: RequestInit) {
 
             function handleAbort() {
                 port.postMessage({ type: 'abort' })
+                rejectOnce(new DOMException('Aborted', 'AbortError'))
             }
             signal?.addEventListener('abort', handleAbort)
-        })()
+        })().catch((error) => {
+            reject(error)
+        })
     })
 }

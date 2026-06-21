@@ -70,6 +70,8 @@ export function getManifest(browser: 'firefox' | 'chromium') {
             'https://*.chatglm.cn/',
             'https://*.cohere.ai/',
             'https://*.deepseek.com/',
+            'http://localhost/*',
+            'http://127.0.0.1/*',
         ],
     }
 
