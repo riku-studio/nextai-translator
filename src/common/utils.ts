@@ -438,6 +438,26 @@ function wait(ms: number, signal?: AbortSignal | null) {
     })
 }
 
+async function readErrorResponse(resp: Response) {
+    const text = await resp.text()
+    if (!text) {
+        return {
+            error: {
+                message: resp.statusText || `HTTP ${resp.status}`,
+            },
+        }
+    }
+    try {
+        return JSON.parse(text)
+    } catch {
+        return {
+            error: {
+                message: text,
+            },
+        }
+    }
+}
+
 export async function fetchSSE(input: string, options: FetchSSEOptions) {
     const {
         onMessage,
@@ -583,7 +603,7 @@ export async function fetchSSE(input: string, options: FetchSSEOptions) {
     }
     onStatusCode?.(resp.status)
     if (resp.status !== 200) {
-        onError(await resp.json())
+        onError(await readErrorResponse(resp))
         return
     }
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

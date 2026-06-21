@@ -25,11 +25,20 @@ browser.contextMenus?.create(
 
 browser.contextMenus?.onClicked.addListener(async function (info) {
     const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true })
-    tab.id &&
-        browser.tabs.sendMessage(tab.id, {
+    if (!tab.id) {
+        return
+    }
+    try {
+        await browser.tabs.sendMessage(tab.id, {
             type: 'open-translator',
             info,
         })
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+        if (!message.includes('Receiving end does not exist')) {
+            console.error(error)
+        }
+    }
 })
 
 async function fetchWithStream(
