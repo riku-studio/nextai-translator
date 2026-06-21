@@ -45,9 +45,7 @@ export async function fetchPromotions(): Promise<IPromotionResponse> {
             throw new Error(resp.statusText)
         }
         return resp.json()
-    } catch (error) {
-        console.error('Error fetching promotions: ', error)
-
+    } catch {
         return {}
     }
 }
