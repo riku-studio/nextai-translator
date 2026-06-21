@@ -26,15 +26,17 @@ const useStyles = createUseStyles({
         borderRadius: '14px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)',
         minWidth: `${popupCardMinWidth}px`,
-        maxWidth: `${popupCardMaxWidth}px`,
+        maxWidth: `min(${popupCardMaxWidth}px, calc(100vw - ${documentPadding * 2}px))`,
         lineHeight: '1.6',
         fontSize: '13px',
         color: '#333',
         font: '14px/1.6 "Inter",-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji',
         letterSpacing: '-0.01em',
         minHeight: `${popupCardMinHeight}px`,
+        maxHeight: `calc(100vh - ${documentPadding * 2}px)`,
         width: 'max-content',
-        overflow: 'hidden',
+        overflow: 'auto',
+        resize: 'both',
     },
 })
 
@@ -57,9 +59,14 @@ export default function InnerContainer({ children, reference, compact }: Props) 
                 flip(),
                 size({
                     apply({ availableHeight, elements }) {
+                        const viewportMaxHeight = window.innerHeight - documentPadding * 2
+                        const nextMaxHeight = Math.min(
+                            viewportMaxHeight,
+                            Math.max(popupCardMinHeightAfterTranslation, availableHeight)
+                        )
                         Object.assign(elements.floating.style, {
-                            maxHeight: `${Math.max(popupCardMinHeightAfterTranslation, availableHeight)}px`,
-                            overflow: 'hidden',
+                            maxHeight: `${nextMaxHeight}px`,
+                            overflow: 'auto',
                         })
                     },
                 }),

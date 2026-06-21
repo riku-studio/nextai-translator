@@ -359,6 +359,7 @@ const useStyles = createUseStyles({
         'marginTop': '-14px',
         'display': 'flex',
         'overflowY': 'auto',
+        'minHeight': '96px',
         'color': props.themeType === 'dark' ? props.theme.colors.contentSecondary : props.theme.colors.contentPrimary,
         '& *': {
             '-ms-user-select': 'text',
@@ -1105,7 +1106,11 @@ function InnerTranslator(props: IInnerTranslatorProps) {
 
         const calculateTranslatedContentMaxHeight = (): number => {
             const { innerHeight } = window
-            const maxHeight = popupCardInnerContainer ? parseInt(popupCardInnerContainer.style.maxHeight) : innerHeight
+            const measuredHeight = popupCardInnerContainer.getBoundingClientRect().height
+            const styleMaxHeight = parseInt(popupCardInnerContainer.style.maxHeight)
+            const maxHeight = Number.isFinite(styleMaxHeight)
+                ? styleMaxHeight
+                : Math.min(innerHeight - 20, Math.max(720, measuredHeight))
 
             const editorHeight = editorContainerRef.current?.offsetHeight || 0
             const actionButtonsHeight = actionButtonsRef.current?.offsetHeight || 0
@@ -1120,24 +1125,30 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                 parseInt(containerPaddingTop) +
                 parseInt(containerPaddingBottom)
 
-            return maxHeight - headerHeight - editorHeight - actionButtonsHeight - paddingVertical
+            return Math.max(160, maxHeight - headerHeight - editorHeight - actionButtonsHeight - paddingVertical)
         }
 
-        const resizeHandle: ResizeObserverCallback = _.debounce(() => {
+        const updateTranslatedContentMaxHeight = () => {
             // Listen for element height changes
             const $translatedContent = translatedContentRef.current
             if ($translatedContent) {
                 const translatedContentMaxHeight = calculateTranslatedContentMaxHeight()
                 $translatedContent.style.maxHeight = `${translatedContentMaxHeight}px`
             }
-        }, 500)
+        }
+
+        const resizeHandle: ResizeObserverCallback = _.debounce(updateTranslatedContentMaxHeight, 150)
 
         const observer = new ResizeObserver(resizeHandle)
         observer.observe(popupCardInnerContainer)
+        if (editorContainerRef.current) {
+            observer.observe(editorContainerRef.current)
+        }
+        updateTranslatedContentMaxHeight()
         return () => {
             observer.disconnect()
         }
-    }, [showSettings])
+    }, [showSettings, translatedText, editableText])
 
     const [isNotLogin, setIsNotLogin] = useState(false)
 
