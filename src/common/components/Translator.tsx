@@ -1471,6 +1471,10 @@ function InnerTranslator(props: IInnerTranslatorProps) {
             setShowSettings(true)
             return
         }
+        if (settings.provider === 'LiteLLM' && !settings.litellmAPIKey) {
+            setShowSettings(true)
+            return
+        }
     }, [props.defaultShowSettings, setShowSettings, settings])
 
     const [isOCRProcessing, setIsOCRProcessing] = useState(false)
@@ -2108,7 +2112,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                             settings.enableBackgroundBlur && styles.popupCardContentContainerBackgroundBlur
                         )}
                     >
-                        {settings?.apiURL === defaultAPIURL && (
+                        {settings.provider === 'OpenAI' && settings?.apiURL === defaultAPIURL && (
                             <div>
                                 <IpLocationNotification showSettings={showSettings} />
                             </div>

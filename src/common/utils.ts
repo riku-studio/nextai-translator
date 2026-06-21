@@ -10,12 +10,14 @@ import { OPENAI_CHAT_COMPLETIONS_API_PATH, OPENAI_PREFERRED_DEFAULT_MODEL } from
 
 export const defaultAPIURL = 'https://api.openai.com'
 export const defaultAPIURLPath = OPENAI_CHAT_COMPLETIONS_API_PATH
-export const defaultProvider = 'OpenAI'
+export const defaultProvider = 'LiteLLM'
 export const defaultAPIModel = OPENAI_PREFERRED_DEFAULT_MODEL
 
 export const defaultChatGPTAPIAuthSessionAPIURL = 'https://chat.openai.com/api/auth/session'
 export const defaultChatGPTWebAPI = 'https://chat.openai.com/backend-api'
 export const defaultGeminiAPIURL = 'https://generativelanguage.googleapis.com'
+export const defaultLiteLLMAPIURL = 'http://127.0.0.1:4001'
+export const defaultLiteLLMAPIModel = 'translate'
 export const defaultChatGPTModel = 'text-davinci-002-render-sha'
 
 export const defaultAutoTranslate = false
@@ -113,6 +115,10 @@ const settingKeys: Record<keyof ISettings, number> = {
     deepSeekAPIModel: 1,
     cerebrasAPIKey: 1,
     cerebrasAPIModel: 1,
+    litellmAPIURL: 1,
+    litellmAPIURLPath: 1,
+    litellmAPIKey: 1,
+    litellmAPIModel: 1,
     fontSize: 1,
     uiFontSize: 1,
     iconSize: 1,
@@ -241,6 +247,18 @@ export async function getSettings(): Promise<ISettings> {
     if (settings.geminiAPIURL === undefined || settings.geminiAPIURL === null) {
         settings.geminiAPIURL = defaultGeminiAPIURL
     }
+    if (!settings.litellmAPIURL) {
+        settings.litellmAPIURL = defaultLiteLLMAPIURL
+    }
+    if (!settings.litellmAPIURLPath) {
+        settings.litellmAPIURLPath = defaultAPIURLPath
+    }
+    if (!settings.litellmAPIKey) {
+        settings.litellmAPIKey = ''
+    }
+    if (!settings.litellmAPIModel) {
+        settings.litellmAPIModel = defaultLiteLLMAPIModel
+    }
     if (settings.fontSize === undefined || settings.fontSize === null) {
         settings.fontSize = 15
     }
@@ -329,7 +347,7 @@ export const isFirefox = () => /firefox/i.test(navigator.userAgent)
 
 export const isUsingOpenAIOfficialAPIEndpoint = async () => {
     const settings = await getSettings()
-    return settings.provider === defaultProvider && settings.apiURL === defaultAPIURL
+    return settings.provider === 'OpenAI' && settings.apiURL === defaultAPIURL
 }
 
 export const isUsingOpenAIOfficial = async () => {
@@ -619,6 +637,8 @@ export function getAPIKeyForProvider(provider: string, settings: ISettings): str
             return settings.deepSeekAPIKey
         case 'Cerebras':
             return settings.cerebrasAPIKey
+        case 'LiteLLM':
+            return settings.litellmAPIKey
         case 'Moonshot':
             return settings.moonshotAPIKey
         case 'MiniMax':

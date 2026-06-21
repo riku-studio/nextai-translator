@@ -1425,6 +1425,7 @@ export function ProviderSelector({ value, onChange, hasPromotion }: IProviderSel
               { label: `Kimi (${t('Free')})`, id: 'Kimi' },
               { label: `${t('ChatGLM')} (${t('Free')})`, id: 'ChatGLM' },
               { label: 'Cohere', id: 'Cohere' },
+              { label: 'LiteLLM', id: 'LiteLLM' },
               { label: `Ollama (${t('Local Model')})`, id: 'Ollama' },
               { label: 'Gemini', id: 'Gemini' },
               // { label: 'ChatGPT (Web)', id: 'ChatGPT' },
@@ -1445,6 +1446,7 @@ export function ProviderSelector({ value, onChange, hasPromotion }: IProviderSel
               { label: `${t('ChatGLM')} (${t('Free')})`, id: 'ChatGLM' },
               { label: 'ChatGPT (Web)', id: 'ChatGPT' },
               { label: 'Cohere', id: 'Cohere' },
+              { label: 'LiteLLM', id: 'LiteLLM' },
               { label: 'Gemini', id: 'Gemini' },
               { label: 'Azure', id: 'Azure' },
               { label: 'MiniMax', id: 'MiniMax' },
@@ -2577,6 +2579,35 @@ export function InnerSettings({
                                     <Input autoComplete='off' size='compact' />
                                 </FormItem>
                             </div>
+                        </div>
+                        <div
+                            style={{
+                                display: values.provider === 'LiteLLM' ? 'block' : 'none',
+                            }}
+                        >
+                            <FormItem
+                                required={values.provider === 'LiteLLM'}
+                                name='litellmAPIKey'
+                                label='LiteLLM API Key'
+                            >
+                                <Input autoFocus type='password' size='compact' onBlur={onBlur} />
+                            </FormItem>
+                            <FormItem
+                                required={values.provider === 'LiteLLM'}
+                                name='litellmAPIModel'
+                                label={t('API Model')}
+                                caption={t('Generally, there is no need to modify this item.')}
+                            >
+                                <Input autoComplete='off' size='compact' onBlur={onBlur} />
+                            </FormItem>
+                            <FormItem
+                                name='litellmAPIURL'
+                                label={t('API URL')}
+                                required={values.provider === 'LiteLLM'}
+                                caption={t('Generally, there is no need to modify this item.')}
+                            >
+                                <Input size='compact' onBlur={onBlur} />
+                            </FormItem>
                         </div>
                         <div
                             style={{

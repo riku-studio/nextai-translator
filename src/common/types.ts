@@ -142,6 +142,10 @@ export interface ISettings {
     cohereAPIModel: string
     cerebrasAPIKey: string
     cerebrasAPIModel: string
+    litellmAPIURL: string
+    litellmAPIURLPath: string
+    litellmAPIKey: string
+    litellmAPIModel: string
     fontSize: number
     uiFontSize: number
     iconSize: number
